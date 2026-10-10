@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import connectDB from "./config/connectDb.js";
+import userRoutes from "./routes/userRoutes.js";
 
 
 const app = express();
@@ -25,6 +26,9 @@ app.get("/", (req, res) => {
     message: "InterviewIQ API is running",
   });
 });
+
+// API Routes
+app.use("/api/user", userRoutes);
 
 // Database Connection & Server Listener
 connectDB();
