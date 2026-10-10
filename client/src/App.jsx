@@ -1,10 +1,16 @@
-import React from 'react'
+
+import {  Route , Routes } from 'react-router-dom';
+import Home from './pages/Home.jsx';
+import Auth from './pages/Auth.jsx';
+ export const ServerUrl = "httpp://localhost:8000"
 
 function App(){
   return(
-    <div>
-      Home Page
-    </div>
+  <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/Auth" element={<Auth />} />
+    </Routes> 
   )
 }
-export default App
+
+export default App;
