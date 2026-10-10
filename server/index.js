@@ -2,10 +2,12 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/connectDb.js";
-import cookieParser from "cookie-parser" 
+import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.route.js";
 import userRoutes from "./routes/userRoutes.js";
-dotenv.config()
+import resumeRoutes from "./routes/resumeRoutes.js";
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -17,7 +19,9 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(express.json());
+app.use(cookieParser());
 
 // Root Health & Status Route
 app.get("/", (req, res) => {
@@ -30,6 +34,7 @@ app.get("/", (req, res) => {
 // API Routes
 app.use("/api/user", userRoutes);
 app.use("/api/auth", authRouter);
+app.use("/api/resume", resumeRoutes);
 
 // Database Connection & Server Listener
 connectDB();
