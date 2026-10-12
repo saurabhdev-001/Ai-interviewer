@@ -36,6 +36,14 @@ app.use("/api/user", userRoutes);
 app.use("/api/auth", authRouter);
 app.use("/api/resume", resumeRoutes);
 
+// 404 Not Found Catch-All
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Cannot ${req.method} ${req.originalUrl}`,
+  });
+});
+
 // Database Connection & Server Listener
 connectDB();
 
