@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Interview from "../models/Interview.js";
 import { generateText } from "../config/gemini.js";
 
@@ -229,6 +230,84 @@ You MUST return valid JSON with exactly this structure:
     return res.status(500).json({
       success: false,
       message: "An error occurred while creating the interview.",
+    });
+  }
+};
+
+/**
+ * GET /api/interview/:id
+ * Retrieves an existing interview by its MongoDB ObjectId.
+ * Enforces authentication and strict ownership verification.
+ */
+export const getInterviewById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate ObjectId format strictly (24-char hex string) before querying MongoDB
+    const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+    if (!id || typeof id !== "string" || !OBJECT_ID_REGEX.test(id) || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid interview ID format.",
+      });
+    }
+
+    // 2. Query interview by ID
+    const interview = await Interview.findById(id);
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: "Interview not found.",
+      });
+    }
+
+    // 3. Strict ownership check (never disclose existence if owned by another user)
+    if (!req.userId || interview.userId.toString() !== req.userId.toString()) {
+      return res.status(404).json({
+        success: false,
+        message: "Interview not found.",
+      });
+    }
+
+    // 4. Construct allowlisted response (excluding internal db/ownership fields)
+    const formattedInterview = {
+      _id: interview._id,
+      role: interview.role,
+      experience: interview.experience,
+      interviewType: interview.interviewType,
+      resumeSkills: interview.resumeSkills || [],
+      questions: interview.questions.map((q) => {
+        const questionObj = {
+          _id: q._id,
+          question: q.question,
+          userAnswer: q.userAnswer || "",
+          feedback: q.feedback || "",
+        };
+        if (q.score !== undefined) {
+          questionObj.score = q.score;
+        }
+        if (q.accuracy !== undefined) {
+          questionObj.accuracy = q.accuracy;
+        }
+        return questionObj;
+      }),
+      overallScore: interview.overallScore,
+      summaryFeedback: interview.summaryFeedback || "",
+      status: interview.status,
+      createdAt: interview.createdAt,
+      updatedAt: interview.updatedAt,
+    };
+
+    return res.status(200).json({
+      success: true,
+      interview: formattedInterview,
+    });
+  } catch (error) {
+    console.error("Get interview by ID error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while retrieving the interview.",
     });
   }
 };
