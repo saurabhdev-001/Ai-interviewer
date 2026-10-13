@@ -36,21 +36,28 @@ export const generateText = async (prompt, options = {}) => {
   }
 
   const model = options.model || DEFAULT_GEMINI_MODEL;
+  const maxAttempts = options.maxAttempts || 2;
 
-  try {
-    const response = await ai.models.generateContent({
-      model,
-      contents: prompt,
-      config: options.config || {},
-    });
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: options.config || {},
+      });
 
-    return {
-      text: response.text ? response.text.trim() : "",
-      model,
-    };
-  } catch (error) {
-    const status = error.status || error.code || 500;
-    let message = "Gemini service encountered an error";
+      return {
+        text: response.text ? response.text.trim() : "",
+        model,
+      };
+    } catch (error) {
+      const status = error.status || error.code || 500;
+      if ((status === 503 || status === 504) && attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+
+      let message = "Gemini service encountered an error";
 
     if (status === 400) {
       message = "Bad request to Gemini API";
@@ -67,6 +74,7 @@ export const generateText = async (prompt, options = {}) => {
     const sanitizedError = new Error(message);
     sanitizedError.statusCode = status;
     throw sanitizedError;
+    }
   }
 };
 
