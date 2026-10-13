@@ -47,7 +47,17 @@ function Navbar() {
         <div className="flex items-center gap-6 relative">
           <div className="relative">
             <button
+<<<<<<< HEAD
               onClick={() => setShowCreditPopup((prev) => !prev)}
+=======
+              onClick={() => {
+                if (!userData) {
+                  setShowAuth(true);
+                  return;
+                }
+                setShowCreditPopup((prev) => !prev);
+              }}
+>>>>>>> bc1ec8dffc63466bce6567d8663484b47b0152a1
               className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full text-md hover:bg-gray-200 transition"
             >
               <BsCoin size={20} />
@@ -70,7 +80,13 @@ function Navbar() {
 
           <div className="relative">
             <button
-              onClick={() => setShowUserPopup((prev) => !prev)}
+              onClick={() => {
+                if (!userData) {
+                  setShowAuth(true);
+                  return;
+                }
+                setShowUserPopup((prev) => !prev);
+              }}
               className="w-9 h-9 bg-black text-white rounded-full flex items-center justify-center font-semibold"
             >
               {userData ? userData?.name?.slice(0, 1).toUpperCase() : <FaUserAstronaut size={16} />}

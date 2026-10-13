@@ -1,6 +1,7 @@
 
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { BsRobot } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi2";
 import { motion } from "motion/react";
@@ -9,9 +10,11 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../utils/firebase.js";
 import axios from "axios";
 import { ServerUrl } from "../App";
+import { setUserData } from "../redux/userSlice";
 
-function Auth(isModel=false) {
+function Auth({ isModel = false }) {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const inFlightRef = useRef(false);
@@ -25,12 +28,17 @@ function Auth(isModel=false) {
         try {
             const response = await signInWithPopup(auth, provider);
             const idToken = await response.user.getIdToken();
-            await axios.post(
+            const apiRes = await axios.post(
                 ServerUrl + "/api/auth/google",
                 { idToken },
                 { withCredentials: true }
             );
-            navigate("/");
+            if (apiRes?.data?.user) {
+                dispatch(setUserData(apiRes.data.user));
+            }
+            if (!isModel) {
+                navigate("/");
+            }
         } catch (error) {
             console.error("Authentication error:", error?.message || "Sign-in failed");
             if (error?.code === "auth/cancelled-popup-request") {
@@ -53,7 +61,7 @@ function Auth(isModel=false) {
     };
 
     return (
-        <div className="w-full min-h-screen bg-[#f3f3f3] flex justify-center items-center px-6 py-20">
+        <div className={isModel ? "w-full flex justify-center items-center" : "w-full min-h-screen bg-[#f3f3f3] flex justify-center items-center px-6 py-20"}>
             <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
