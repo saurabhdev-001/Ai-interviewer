@@ -18,7 +18,7 @@ const ai = new GoogleGenAI({
   httpOptions: { timeout: 30000 },
 });
 
-export const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+export const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 /**
  * Reusable helper to generate text using the configured Gemini model.
