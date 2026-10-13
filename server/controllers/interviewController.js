@@ -9,6 +9,9 @@ const MAX_SKILL_LENGTH = 100;
 const MAX_ANSWER_LENGTH = 5000;
 const MAX_FEEDBACK_LENGTH = 2000;
 const MAX_SUMMARY_LENGTH = 3000;
+const MAX_HISTORY_LIMIT = 50;
+const DEFAULT_HISTORY_LIMIT = 10;
+const DEFAULT_HISTORY_PAGE = 1;
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 const inFlightAnswerEvaluations = new Set();
 const inFlightInterviewCompletions = new Set();
@@ -268,6 +271,85 @@ You MUST return valid JSON with exactly this structure:
     return res.status(500).json({
       success: false,
       message: "An error occurred while creating the interview.",
+    });
+  }
+};
+
+/**
+ * GET /api/interview/history
+ * Returns a paginated list of interviews belonging exclusively to the authenticated user.
+ * Supports query params: page (default 1), limit (default 10, max 50).
+ * Excludes internal fields, question text/answers/feedback.
+ */
+export const getInterviewHistory = async (req, res) => {
+  try {
+    // 1. Validate pagination query parameters
+    let pageNum = DEFAULT_HISTORY_PAGE;
+    if (req.query.page !== undefined && req.query.page !== "") {
+      const parsedPage = Number(req.query.page);
+      if (!Number.isInteger(parsedPage) || parsedPage < 1) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid page parameter. 'page' must be a positive integer.",
+        });
+      }
+      pageNum = parsedPage;
+    }
+
+    let limitNum = DEFAULT_HISTORY_LIMIT;
+    if (req.query.limit !== undefined && req.query.limit !== "") {
+      const parsedLimit = Number(req.query.limit);
+      if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > MAX_HISTORY_LIMIT) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid limit parameter. 'limit' must be an integer between 1 and ${MAX_HISTORY_LIMIT}.`,
+        });
+      }
+      limitNum = parsedLimit;
+    }
+
+    const skip = (pageNum - 1) * limitNum;
+
+    // 2. Query MongoDB for count and paginated interviews owned by authenticated user
+    const [total, rawInterviews] = await Promise.all([
+      Interview.countDocuments({ userId: req.userId }),
+      Interview.find({ userId: req.userId })
+        .select("_id role experience interviewType overallScore status createdAt updatedAt")
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+    ]);
+
+    const totalPages = total > 0 ? Math.ceil(total / limitNum) : 0;
+
+    // 3. Format allowlisted response fields
+    const interviews = rawInterviews.map((doc) => ({
+      _id: doc._id,
+      role: doc.role,
+      experience: doc.experience,
+      interviewType: doc.interviewType,
+      overallScore: doc.overallScore !== undefined ? doc.overallScore : null,
+      status: doc.status,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      interviews,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    console.error("Get interview history error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while retrieving interview history.",
     });
   }
 };
