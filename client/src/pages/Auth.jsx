@@ -25,15 +25,14 @@ function Auth() {
         try {
             const response = await signInWithPopup(auth, provider);
             const idToken = await response.user.getIdToken();
-            const result = await axios.post(
+            await axios.post(
                 ServerUrl + "/api/auth/google",
                 { idToken },
                 { withCredentials: true }
             );
-            console.log("Authentication successful:", result.data);
             navigate("/");
         } catch (error) {
-            console.error("Authentication error:", error);
+            console.error("Authentication error:", error?.message || "Sign-in failed");
             if (error?.code === "auth/cancelled-popup-request") {
                 setErrorMessage("Sign-in request was cancelled. Please try again.");
             } else if (error?.code === "auth/popup-closed-by-user") {

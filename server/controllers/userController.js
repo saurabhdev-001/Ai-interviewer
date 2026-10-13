@@ -116,3 +116,52 @@ export const getUserProfile = async (req, res) => {
     });
   }
 };
+
+/**
+ * GET /api/user/current-user
+ * Protected route retrieving the currently authenticated user's record.
+ * Identity is derived strictly from req.userId/req.user established by requireAuth.
+ */
+export const getCurrentUser = async (req, res) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required. Please sign in.",
+      });
+    }
+
+    let user = req.user;
+    if ((!user || !user.email) && mongoose.connection.readyState === 1) {
+      user = await User.findById(req.userId);
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User account not found or session is no longer valid.",
+      });
+    }
+
+    const publicUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      credits: typeof user.credits === "number" ? user.credits : 100,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    return res.status(200).json({
+      ...publicUser,
+      success: true,
+      user: publicUser,
+    });
+  } catch (error) {
+    console.error("Get current user controller error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while retrieving user session",
+    });
+  }
+};
