@@ -10,7 +10,7 @@ import { auth, provider } from "../utils/firebase.js";
 import axios from "axios";
 import { ServerUrl } from "../App";
 
-function Auth() {
+function Auth(isModel=false) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
