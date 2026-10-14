@@ -14,6 +14,7 @@ import Auth from "./pages/Auth.jsx";
 import InterviewSetupPage from "./pages/InterviewSetupPage.jsx";
 import InterviewPage from "./pages/InterviewPage.jsx";
 import InterviewReport from "./pages/InterviewReport.jsx";
+import InterviewHistory from "./pages/InterviewHistory.jsx";
 
 export { ServerUrl };
 
@@ -77,6 +78,14 @@ function App() {
         element={
           <ProtectedRoute>
             <InterviewReport />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute>
+            <InterviewHistory />
           </ProtectedRoute>
         }
       />
