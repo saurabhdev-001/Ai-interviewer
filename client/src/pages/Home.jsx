@@ -1,315 +1,247 @@
-import React from 'react'
-import Navbar from '../components/Navbar'
-import { useSelector } from 'react-redux'
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import {
   BsRobot,
-  BsMic,
-  BsClock,
   BsBarChart,
-  BsFileEarmarkText
+  BsFileEarmarkText,
+  BsLightningCharge,
+  BsArrowRight,
+  BsCodeSlash,
+  BsPeople,
+  BsClock,
 } from "react-icons/bs";
-import { HiSparkles } from "react-icons/hi";
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import AuthModel from '../components/Authmodel';
-import hrImg from "../assets/HR.png";
-import techImg from "../assets/tech.png";
-import confidenceImg from "../assets/confi.png";
-import creditImg from "../assets/credit.png";
-import evalImg from "../assets/ai-ans.png";
-import resumeImg from "../assets/resume.png";
-import pdfImg from "../assets/pdf.png";
-import analyticsImg from "../assets/history.png";
-import Footer from '../components/Footer';
-
+import { HiSparkles } from "react-icons/hi2";
+import Navbar from "../components/Navbar.jsx";
+import Footer from "../components/Footer.jsx";
+import AuthModel from "../components/Authmodel.jsx";
 
 function Home() {
-  const { userData } = useSelector((state) => state.user)
+  const { userData } = useSelector((state) => state.user);
   const [showAuth, setShowAuth] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const handleStartInterview = () => {
+    if (!userData) {
+      setShowAuth(true);
+      return;
+    }
+    navigate("/interview");
+  };
+
+  const handleViewHistory = () => {
+    if (!userData) {
+      setShowAuth(true);
+      return;
+    }
+    navigate("/history");
+  };
+
   return (
-    <div className='min-h-screen bg-[#f3f3f3] flex flex-col'>
+    <div className="min-h-screen bg-[#f3f3f3] flex flex-col">
       <Navbar />
 
-      <div className='flex-1 px-6 py-20'>
-        <div className='max-w-6xl mx-auto'>
-
-          <div className='flex justify-center mb-6'>
-            <div className='bg-gray-100 text-gray-600 text-sm px-4 py-2 rounded-full flex items-center gap-2'>
-              <HiSparkles size={16} className="bg-green-50 text-green-600" />
-              AI Powered Smart Interview Platform
+      <main className="flex-1 px-4 sm:px-6 py-12 md:py-20">
+        <div className="max-w-6xl mx-auto">
+          {/* Top Pill */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-white border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-full flex items-center gap-2 shadow-xs">
+              <HiSparkles size={16} className="text-green-600" />
+              <span>AI-Powered Smart Interview Platform</span>
             </div>
-
-
           </div>
-          <div className='text-center mb-28'>
+
+          {/* Hero Section */}
+          <div className="text-center mb-20 md:mb-28">
             <motion.h1
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className='text-4xl md:text-6xl font-semibold leading-tight max-w-4xl mx-auto'>
-              Practice Interviews with
-              <span className='relative inline-block'>
-                <span className='bg-green-100 text-green-600 px-5 py-1 rounded-full'>
-                  AI Intelligence
-
-                </span>
+              transition={{ duration: 0.5 }}
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-gray-900 leading-tight max-w-4xl mx-auto"
+            >
+              Practice Interviews with{" "}
+              <span className="bg-green-100 text-green-700 px-4 py-1 rounded-2xl inline-block mt-1 sm:mt-0">
+                AI Intelligence
               </span>
-
-
-
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              className='text-gray-500 mt-6 max-w-2xl mx-auto text-lg'>
-              Role-based mock interviews with smart follow-ups,
-              adaptive difficulty and real-time performance evaluation.
-
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-gray-600 mt-6 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed"
+            >
+              Role-based mock interviews with custom question generation,
+              targeted technical or HR evaluations, and actionable feedback.
             </motion.p>
 
-            <div className='flex flex-wrap justify-center gap-4 mt-10'>
+            <div className="flex flex-wrap justify-center gap-4 mt-8 md:mt-10">
               <motion.button
-                onClick={() => {
-                  if (!userData) {
-                    setShowAuth(true)
-                    return;
-                  }
-                  navigate("/interview")
-                }}
-                whileHover={{ opacity: 0.9, scale: 1.03 }}
-                whileTap={{ opacity: 1, scale: 0.98 }}
-                className='bg-black text-white px-10 py-3 rounded-full hover:opacity-90 transition shadow-md'>
-                Start Interview
-
+                type="button"
+                onClick={handleStartInterview}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-black text-white px-8 sm:px-10 py-3.5 rounded-full font-medium hover:bg-gray-800 transition shadow-sm flex items-center gap-2 cursor-pointer"
+              >
+                <span>Start Interview</span>
+                <BsArrowRight size={16} />
               </motion.button>
 
               <motion.button
-                onClick={() => {
-                  if (!userData) {
-                    setShowAuth(true)
-                    return;
-                  }
-                  navigate("/history")
-                }}
-                whileHover={{ opacity: 0.9, scale: 1.03 }}
-                whileTap={{ opacity: 1, scale: 0.98 }}
-                className='border border-gray-300 px-10 py-3 rounded-full hover:bg-gray-100 transition'>
+                type="button"
+                onClick={handleViewHistory}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white border border-gray-300 text-gray-800 px-8 sm:px-10 py-3.5 rounded-full font-medium hover:bg-gray-50 transition cursor-pointer"
+              >
                 View History
-
               </motion.button>
             </div>
           </div>
 
-          <div className='flex flex-col md:flex-row justify-center items-center gap-10 mb-28'>
-            {
-              [
+          {/* 3 Step Workflow */}
+          <div className="mb-24 md:mb-32">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                How It Works
+              </h2>
+              <p className="text-gray-500 text-sm sm:text-base mt-2">
+                A structured 3-step workflow designed to simulate realistic interview environments
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+              {[
                 {
-                  icon: <BsRobot size={24} />,
+                  icon: <BsFileEarmarkText size={22} />,
                   step: "STEP 1",
-                  title: "Role & Experience Selection",
-                  desc: "AI adjusts difficulty based on selected job role."
+                  title: "Role & Resume Setup",
+                  desc: "Specify your target role and experience, or upload your PDF resume to auto-extract technical skills.",
                 },
                 {
-                  icon: <BsMic size={24} />,
+                  icon: <BsRobot size={22} />,
                   step: "STEP 2",
-                  title: "Smart Voice Interview",
-                  desc: "Dynamic follow-up questions based on your answers."
+                  title: "AI-Generated Questions",
+                  desc: "Receive 5 tailored interview questions matched to your role, skills, and chosen interview format.",
                 },
                 {
-                  icon: <BsClock size={24} />,
+                  icon: <BsBarChart size={22} />,
                   step: "STEP 3",
-                  title: "Timer Based Simulation",
-                  desc: "Real interview pressure with time tracking."
-                }
+                  title: "Detailed Evaluation",
+                  desc: "Submit your typed responses and get comprehensive feedback on technical accuracy and clarity.",
+                },
               ].map((item, index) => (
-                <motion.div key={index}
-                  initial={{ opacity: 0, y: 60 }}
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 + index * 0.2 }}
-                  whileHover={{ rotate: 0, scale: 1.06 }}
-
-                  className={`
-        relative bg-white rounded-3xl border-2 border-green-100 
-        hover:border-green-500 p-10 w-80 max-w-[90%] shadow-md hover:shadow-2xl 
-        transition-all duration-300
-        ${index === 0 ? "rotate-[-4deg]" : ""}
-        ${index === 1 ? "rotate-[3deg] md:-mt-6 shadow-xl" : ""}
-        ${index === 2 ? "rotate-[-3deg]" : ""}
-      `}>
-
-                  <div className='absolute -top-8 left-1/2 -translate-x-1/2 bg-white border-2 border-green-500 text-green-600 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg'>
-                    {item.icon}</div>
-                  <div className='pt-10 text-center'>
-                    <div className='text-xs text-green-600 font-semibold mb-2 tracking-wider'>{item.step}</div>
-                    <h3 className='font-semibold mb-3 text-lg'>{item.title}</h3>
-                    <p className='text-sm text-gray-500 leading-relaxed'>{item.desc}</p>
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white rounded-3xl border border-gray-200 p-8 shadow-xs hover:shadow-md transition-shadow relative"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-700 flex items-center justify-center mb-6">
+                    {item.icon}
                   </div>
-
-
+                  <div className="text-xs font-semibold text-green-600 tracking-wider mb-2">
+                    {item.step}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    {item.desc}
+                  </p>
                 </motion.div>
-              ))
-            }
+              ))}
+            </div>
           </div>
 
-
-          <div className='mb-32'>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className='text-4xl font-semibold text-center mb-16'>
-              Advanced AI{" "}
-              <span className="text-green-600">Capabilities</span>
-
-            </motion.h2>
-
-            <div className='grid md:grid-cols-2 gap-10'>
-              {
-                [
-                  {
-                    image: evalImg,
-                    icon: <BsBarChart size={20} />,
-                    title: "AI Answer Evaluation",
-                    desc: "Scores communication, technical accuracy and confidence."
-                  },
-                  {
-                    image: resumeImg,
-                    icon: <BsFileEarmarkText size={20} />,
-                    title: "Resume Based Interview",
-                    desc: "Project-specific questions based on uploaded resume."
-                  },
-                  {
-                    image: pdfImg,
-                    icon: <BsFileEarmarkText size={20} />,
-                    title: "Downloadable PDF Report",
-                    desc: "Detailed strengths, weaknesses and improvement insights."
-                  },
-                  {
-                    image: analyticsImg,
-                    icon: <BsBarChart size={20} />,
-                    title: "History & Analytics",
-                    desc: "Track progress with performance graphs and topic analysis."
-                  }
-                ].map((item, index) => (
-                  <motion.div key={index}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
-                    className='bg-white border border-gray-200 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all'>
-                    <div className='flex flex-col md:flex-row items-center gap-8'>
-                      <div className='w-full md:w-1/2 flex justify-center'>
-                        <img src={item.image} alt={item.title} className='w-full h-auto object-contain max-h-64' />
-                      </div>
-
-                      <div className='w-full md:w-1/2'>
-                        <div className='bg-green-50 text-green-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6'>
-                          {item.icon}
-                        </div>
-                        <h3 className='font-semibold mb-3 text-xl'>{item.title}</h3>
-                        <p className='text-gray-500 text-sm leading-relaxed'>{item.desc}</p>
-                      </div>
-
-                    </div>
-
-
-                  </motion.div>
-                ))
-              }
+          {/* Capabilities Grid */}
+          <div className="mb-20 md:mb-28">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Core Capabilities
+              </h2>
+              <p className="text-gray-500 text-sm sm:text-base mt-2">
+                Engineered for realistic practice across technical and HR tracks
+              </p>
             </div>
 
-
-          </div>
-
-          <div className='mb-32'>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className='text-4xl font-semibold text-center mb-16'>
-              Multiple Interview{" "}
-              <span className="text-green-600">Modes</span>
-
-            </motion.h2>
-
-            <div className='grid md:grid-cols-2 gap-10'>
-              {
-                [
-                  {
-                    img: hrImg,
-                    title: "HR Interview Mode",
-                    desc: "Behavioral and communication based evaluation."
-                  },
-                  {
-                    img: techImg,
-                    title: "Technical Mode",
-                    desc: "Deep technical questioning based on selected role."
-                  },
-
-                  {
-                    img: confidenceImg,
-                    title: "Confidence Detection",
-                    desc: "Basic tone and voice analysis insights."
-                  },
-                  {
-                    img: creditImg,
-                    title: "Credits System",
-                    desc: "Unlock premium interview sessions easily."
-                  }
-                ].map((mode, index) => (
-                  <motion.div key={index}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    whileHover={{ y: -6 }}
-                    className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all">
-
-                    <div className='flex items-center justify-between gap-6'>
-                      <div className="w-1/2">
-                        <h3 className="font-semibold text-xl mb-3">
-                          {mode.title}
-                        </h3>
-
-                        <p className="text-gray-500 text-sm leading-relaxed">
-                          {mode.desc}
-                        </p>
-                      </div>
-
-                      {/* RIGHT IMAGE */}
-                      <div className="w-1/2 flex justify-end">
-                        <img
-                          src={mode.img}
-                          alt={mode.title}
-                          className="w-28 h-28 object-contain"
-                        />
-                      </div>
-
-
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              {[
+                {
+                  icon: <BsCodeSlash size={22} />,
+                  title: "Technical Interview Track",
+                  desc: "Evaluates systems architecture, problem-solving, code accuracy, and domain-specific depth.",
+                  tag: "Technical Mode",
+                },
+                {
+                  icon: <BsPeople size={22} />,
+                  title: "HR & Behavioral Track",
+                  desc: "Tests leadership, situational judgment, team collaboration, and communication using the STAR framework.",
+                  tag: "HR Mode",
+                },
+                {
+                  icon: <BsLightningCharge size={22} />,
+                  title: "Resume Skill Extraction",
+                  desc: "Upload a PDF resume to extract skills, project titles, and recommended job roles via server-side AI parsing.",
+                  tag: "Resume-Driven",
+                },
+                {
+                  icon: <BsClock size={22} />,
+                  title: "Instant Scoring & Feedback",
+                  desc: "Calculate individual question accuracy scores and an overall score out of 10 with actionable improvement summaries.",
+                  tag: "Objective Scoring",
+                },
+              ].map((card, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white border border-gray-200 rounded-3xl p-7 shadow-xs hover:border-gray-300 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-900 flex items-center justify-center">
+                      {card.icon}
                     </div>
-
-
-                  </motion.div>
-                ))
-              }
+                    <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                      {card.tag}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {card.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {card.desc}
+                  </p>
+                </div>
+              ))}
             </div>
-
-
           </div>
 
+          {/* Quick CTA Banner */}
+          <div className="bg-black text-white rounded-3xl p-8 sm:p-12 text-center mb-16 shadow-lg">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+              Ready to elevate your interview readiness?
+            </h2>
+            <p className="text-gray-400 text-sm sm:text-base max-w-xl mx-auto mb-8">
+              Configure your desired role and experience in seconds, or upload your resume for tailored question generation.
+            </p>
+            <button
+              type="button"
+              onClick={handleStartInterview}
+              className="bg-white text-black px-8 py-3.5 rounded-full font-semibold hover:bg-gray-100 transition shadow-sm cursor-pointer inline-flex items-center gap-2"
+            >
+              <span>Get Started Now</span>
+              <BsArrowRight size={16} />
+            </button>
+          </div>
         </div>
-      </div>
+      </main>
 
+      <Footer />
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
-
-        <Footer/>
-
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

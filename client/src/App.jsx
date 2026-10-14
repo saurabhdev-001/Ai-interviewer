@@ -8,8 +8,11 @@ import {
   setSessionError,
   clearSessionError,
 } from "./redux/userSlice";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Home from "./pages/Home.jsx";
 import Auth from "./pages/Auth.jsx";
+import InterviewSetupPage from "./pages/InterviewSetupPage.jsx";
+import InterviewTransitionPage from "./pages/InterviewTransitionPage.jsx";
 
 export { ServerUrl };
 
@@ -52,6 +55,22 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/Auth" element={<Auth />} />
+      <Route
+        path="/interview"
+        element={
+          <ProtectedRoute>
+            <InterviewSetupPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/interview/:id"
+        element={
+          <ProtectedRoute>
+            <InterviewTransitionPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
