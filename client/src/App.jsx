@@ -12,7 +12,8 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Home from "./pages/Home.jsx";
 import Auth from "./pages/Auth.jsx";
 import InterviewSetupPage from "./pages/InterviewSetupPage.jsx";
-import InterviewTransitionPage from "./pages/InterviewTransitionPage.jsx";
+import InterviewPage from "./pages/InterviewPage.jsx";
+import InterviewReport from "./pages/InterviewReport.jsx";
 
 export { ServerUrl };
 
@@ -67,7 +68,15 @@ function App() {
         path="/interview/:id"
         element={
           <ProtectedRoute>
-            <InterviewTransitionPage />
+            <InterviewPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/report/:id"
+        element={
+          <ProtectedRoute>
+            <InterviewReport />
           </ProtectedRoute>
         }
       />

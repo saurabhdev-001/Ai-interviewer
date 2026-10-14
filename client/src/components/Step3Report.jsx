@@ -1,364 +1,299 @@
-import React from 'react'
-import { FaArrowLeft } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { motion } from "motion/react"
-import { buildStyles, CircularProgressbar } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
+import { useNavigate } from "react-router-dom";
+import {
+  FaArrowLeft,
+  FaCheckCircle,
+  FaPlus,
+  FaAward,
+  FaLightbulb,
+} from "react-icons/fa";
+import { BsRobot } from "react-icons/bs";
 
 function Step3Report({ report }) {
+  const navigate = useNavigate();
+
   if (!report) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500 text-lg">Loading Report...</p>
+      <div className="min-h-screen bg-[#f3f3f3] flex items-center justify-center p-4">
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4" />
+        <p className="text-gray-500 text-sm font-medium">Loading report...</p>
       </div>
     );
   }
-  const navigate = useNavigate()
+
   const {
-    finalScore = 0,
-    confidence = 0,
-    communication = 0,
-    correctness = 0,
-    questionWiseScore = [],
+    role = "Not specified",
+    experience = "Not specified",
+    interviewType = "technical",
+    overallScore = 0,
+    summaryFeedback = "",
+    questions = [],
+    createdAt,
   } = report;
 
-  const questionScoreData = questionWiseScore.map((score, index) => ({
-    name: `Q${index + 1}`,
-    score: score.score || 0
-  }))
+  const scoreNum = typeof overallScore === "number" ? overallScore : 0;
 
-  const skills = [
-    { label: "Confidence", value: confidence },
-    { label: "Communication", value: communication },
-    { label: "Correctness", value: correctness },
-  ];
+  // Performance category description based on score
+  let performanceTier = {
+    title: "Needs Practice",
+    desc: "Requires substantial improvement across technical and structured answer framing.",
+    color: "text-red-600 bg-red-50 border-red-200",
+  };
 
-  let performanceText = "";
-  let shortTagline = "";
-
-  if (finalScore >= 8) {
-    performanceText = "Ready for job opportunities.";
-    shortTagline = "Excellent clarity and structured responses.";
-  } else if (finalScore >= 5) {
-    performanceText = "Needs minor improvement before interviews.";
-    shortTagline = "Good foundation, refine articulation.";
-  } else {
-    performanceText = "Significant improvement required.";
-    shortTagline = "Work on clarity and confidence.";
+  if (scoreNum >= 8) {
+    performanceTier = {
+      title: "Strong Performance",
+      desc: "Demonstrates exceptional technical depth, clarity, and structured responses.",
+      color: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    };
+  } else if (scoreNum >= 6) {
+    performanceTier = {
+      title: "Proficient",
+      desc: "Solid foundational knowledge with minor gaps in elaboration or precision.",
+      color: "text-blue-700 bg-blue-50 border-blue-200",
+    };
+  } else if (scoreNum >= 4) {
+    performanceTier = {
+      title: "Developing",
+      desc: "Basic understanding demonstrated; practice structuring answers with the STAR or principles-first method.",
+      color: "text-amber-700 bg-amber-50 border-amber-200",
+    };
   }
 
-  const score = finalScore;
-  const percentage = (score / 10) * 100;
+  const getAccuracyBadge = (accuracy) => {
+    switch (accuracy) {
+      case "High":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      case "Medium":
+        return "bg-amber-100 text-amber-800 border-amber-200";
+      case "Low":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      default:
+        return "bg-red-100 text-red-800 border-red-200";
+    }
+  };
 
-
-  const downloadPDF = () => {
-  const doc = new jsPDF("p", "mm", "a4");
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 20;
-  const contentWidth = pageWidth - margin * 2;
-
-  let currentY = 25;
-
-  // ================= TITLE =================
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(34, 197, 94);
-  doc.text("AI Interview Performance Report", pageWidth / 2, currentY, {
-    align: "center",
-  });
-
-  currentY += 5;
-
-  // underline
-  doc.setDrawColor(34, 197, 94);
-  doc.line(margin, currentY + 2, pageWidth - margin, currentY + 2);
-
-  currentY += 15;
-
-  // ================= FINAL SCORE BOX =================
-  doc.setFillColor(240, 253, 244);
-  doc.roundedRect(margin, currentY, contentWidth, 20, 4, 4, "F");
-
-  doc.setFontSize(14);
-  doc.setTextColor(0, 0, 0);
-  doc.text(
-    `Final Score: ${finalScore}/10`,
-    pageWidth / 2,
-    currentY + 12,
-    { align: "center" }
-  );
-
-  currentY += 30;
-
-  // ================= SKILLS BOX =================
-  doc.setFillColor(249, 250, 251);
-  doc.roundedRect(margin, currentY, contentWidth, 30, 4, 4, "F");
-
-  doc.setFontSize(12);
-
-  doc.text(`Confidence: ${confidence}`, margin + 10, currentY + 10);
-  doc.text(`Communication: ${communication}`, margin + 10, currentY + 18);
-  doc.text(`Correctness: ${correctness}`, margin + 10, currentY + 26);
-
-  currentY += 45;
-
-  // ================= ADVICE =================
-  let advice = "";
-
-  if (finalScore >= 8) {
-    advice =
-      "Excellent performance. Maintain confidence and structure. Continue refining clarity and supporting answers with strong real-world examples.";
-  } else if (finalScore >= 5) {
-    advice =
-      "Good foundation shown. Improve clarity and structure. Practice delivering concise, confident answers with stronger supporting examples.";
-  } else {
-    advice =
-      "Significant improvement required. Focus on structured thinking, clarity, and confident delivery. Practice answering aloud regularly.";
-  }
-
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(220);
-  doc.roundedRect(margin, currentY, contentWidth, 35, 4, 4);
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Professional Advice", margin + 10, currentY + 10);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-
-  const splitAdvice = doc.splitTextToSize(advice, contentWidth - 20);
-  doc.text(splitAdvice, margin + 10, currentY + 20);
-
-  currentY += 50;
-
-  // ================= QUESTION TABLE =================
-  autoTable(doc, {
-  startY: currentY,
-  margin: { left: margin, right: margin },
-  head: [["#", "Question", "Score", "Feedback"]],
-  body: questionWiseScore.map((q, i) => [
-    `${i + 1}`,
-    q.question,
-    `${q.score}/10`,
-    q.feedback,
-  ]),
-  styles: {
-    fontSize: 9,
-    cellPadding: 5,
-    valign: "top",
-  },
-  headStyles: {
-    fillColor: [34, 197, 94],
-    textColor: 255,
-    halign: "center",
-  },
-  columnStyles: {
-    0: { cellWidth: 10, halign: "center" }, // index
-    1: { cellWidth: 55 }, // question
-    2: { cellWidth: 20, halign: "center" }, // score
-    3: { cellWidth: "auto" }, // feedback
-  },
-  alternateRowStyles: {
-    fillColor: [249, 250, 251],
-  },
-});
-
-
-  doc.save("AI_Interview_Report.pdf");
-};
+  const formattedDate = createdAt
+    ? new Date(createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Recently completed";
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-gray-50 to-green-50 px-4 sm:px-6 lg:px-10 py-8'>
-      <div className='mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-        <div className='md:mb-10 w-full flex items-start gap-4 flex-wrap'>
+    <div className="min-h-screen bg-[#f3f3f3] py-8 sm:py-12 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Navigation & Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <button
-            onClick={() => navigate("/history")}
-            className='mt-1 p-3 rounded-full bg-white shadow hover:shadow-md transition'><FaArrowLeft className='text-gray-600' /></button>
+            type="button"
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition cursor-pointer"
+          >
+            <FaArrowLeft size={12} />
+            <span>Back to Dashboard</span>
+          </button>
 
-          <div>
-            <h1 className='text-3xl font-bold flex-nowrap text-gray-800'>
-              Interview Analytics Dashboard
-            </h1>
-            <p className='text-gray-500 mt-2'>
-              AI-powered performance insights
-            </p>
+          <button
+            type="button"
+            onClick={() => navigate("/interview")}
+            className="bg-black hover:bg-gray-800 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium transition cursor-pointer inline-flex items-center gap-2 self-start sm:self-auto"
+          >
+            <FaPlus size={12} />
+            <span>Start Another Interview</span>
+          </button>
+        </div>
 
+        {/* Hero Section */}
+        <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-10 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-green-700 bg-green-50 px-3 py-1 rounded-full flex items-center gap-1.5">
+              <FaCheckCircle size={12} />
+              <span>Completed Interview</span>
+            </span>
+            <span className="text-xs text-gray-400">•</span>
+            <span className="text-xs text-gray-500 font-medium">
+              {formattedDate}
+            </span>
+          </div>
+
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">
+            Performance Report: {role}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-600 mt-2">
+            <span className="bg-gray-100 px-3 py-1 rounded-md font-medium">
+              Experience: {experience}
+            </span>
+            <span className="bg-gray-100 px-3 py-1 rounded-md font-medium capitalize">
+              Track: {interviewType === "technical" ? "Technical" : "HR & Behavioral"}
+            </span>
+            <span className="bg-gray-100 px-3 py-1 rounded-md font-medium">
+              5 Questions Evaluated
+            </span>
           </div>
         </div>
 
-        <button onClick={downloadPDF} className='bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md transition-all duration-300 font-semibold text-sm sm:text-base text-nowrap'>Download PDF</button>
-      </div>
-
-
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8'>
-
-        <div className='space-y-6'>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-8 text-center">
-
-            <h3 className="text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">
-              Overall Performance
-            </h3>
-            <div className='relative w-20 h-20 sm:w-25 sm:h-25 mx-auto'>
-              <CircularProgressbar
-                value={percentage}
-                text={`${score}/10`}
-                styles={buildStyles({
-                  textSize: "18px",
-                  pathColor: "#10b981",
-                  textColor: "#ef4444",
-                  trailColor: "#e5e7eb",
-                })}
-              />
-            </div>
-
-            <p className="text-gray-400 mt-3 text-xs sm:text-sm">
-              Out of 10
-            </p>
-
-            <div className="mt-4">
-              <p className="font-semibold text-gray-800 text-sm sm:text-base">
-                {performanceText}
+        {/* Score & Summary Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
+          {/* Overall Score Card */}
+          <div className="lg:col-span-5 bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs flex flex-col justify-between text-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-6">
+                Overall Evaluation Score
               </p>
-              <p className="text-gray-500 text-xs sm:text-sm mt-1">
-                {shortTagline}
-              </p>
-            </div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='bg-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-8'>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-6">
-              Skill Evaluation
-            </h3>
+              {/* Large Score Circle */}
+              <div className="w-36 h-36 mx-auto rounded-full bg-linear-to-b from-gray-50 to-emerald-50 border-4 border-emerald-500 flex flex-col items-center justify-center shadow-inner mb-6">
+                <span className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight">
+                  {scoreNum.toFixed(1)}
+                </span>
+                <span className="text-xs text-gray-500 font-medium mt-0.5">
+                  out of 10
+                </span>
+              </div>
 
-            <div className='space-y-5'>
-              {
-                skills.map((s, i) => (
-                  <div key={i}>
-                    <div className='flex justify-between mb-2 text-sm sm:text-base'>
-
-                      <span>{s.label}</span>
-                      <span className='font-semibold text-green-600'>{s.value}</span>
-                    </div>
-
-                    <div className='bg-gray-200 h-2 sm:h-3 rounded-full'>
-                      <div className='bg-green-500 h-full rounded-full'
-                        style={{ width: `${s.value * 10}%` }}
-
-                      ></div>
-
-                    </div>
-
-
-                  </div>
-                ))
-              }
-            </div>
-
-          </motion.div>
-
-
-        </div>
-
-        <div className='lg:col-span-2 space-y-6'>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='bg-white rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-8'>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-4 sm:mb-6">
-              Performance Trend
-            </h3>
-
-            <div className='h-64 sm:h-72'>
-
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={questionScoreData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 10]} />
-                  <Tooltip />
-                  <Area type="monotone"
-                    dataKey="score"
-                    stroke="#22c55e"
-                    fill="#bbf7d0"
-                    strokeWidth={3} />
-
-
-                </AreaChart>
-
-              </ResponsiveContainer>
-
-
-            </div>
-
-
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='bg-white rounded-2xl sm:rounded-3xl shadow-lg p-5 sm:p-8'>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-6">
-              Question Breakdown
-            </h3>
-            <div className='space-y-6'>
-              {questionWiseScore.map((q, i) => (
-                <div key={i} className='bg-gray-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-200'>
-
-                  <div className='flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4'>
-                    <div>
-                      <p className="text-xs text-gray-400">
-                        Question {i + 1}
-                      </p>
-
-                      <p className="font-semibold text-gray-800 text-sm sm:text-base leading-relaxed">
-                        {q.question || "Question not available"}
-                      </p>
-                    </div>
-
-
-                    <div className='bg-green-100 text-green-600 px-3 py-1 rounded-full font-bold text-xs sm:text-sm w-fit'>
-                      {q.score ?? 0}/10
-                    </div>
-                  </div>
-
-                  <div className='bg-green-50 border border-green-200 p-4 rounded-lg'>
-                    <p className='text-xs text-green-600 font-semibold mb-1'>
-                      AI Feedback
-                    </p>
-                    <p className='text-sm text-gray-700 leading-relaxed'>
-
-                      {q.feedback && q.feedback.trim() !== ""
-                        ? q.feedback
-                        : "No feedback available for this question."}
-                    </p>
-                  </div>
-
+              {/* Performance Tier Badge */}
+              <div
+                className={`p-4 rounded-2xl border text-xs sm:text-sm font-medium mb-4 ${performanceTier.color}`}
+              >
+                <div className="font-bold mb-1 flex items-center justify-center gap-1.5">
+                  <FaAward size={14} />
+                  <span>{performanceTier.title}</span>
                 </div>
-              ))}
+                <p className="leading-relaxed text-xs opacity-90">
+                  {performanceTier.desc}
+                </p>
+              </div>
             </div>
 
-          </motion.div>
+            <p className="text-xs text-gray-400 mt-4">
+              Arithmetic mean across all 5 evaluated questions
+            </p>
+          </div>
 
+          {/* AI Executive Summary Card */}
+          <div className="lg:col-span-7 bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-4 text-gray-900">
+                <BsRobot size={20} className="text-green-600" />
+                <h2 className="text-lg font-bold">Executive Feedback & Insights</h2>
+              </div>
 
+              <div className="p-5 rounded-2xl bg-gray-50 border border-gray-100 text-gray-700 text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                {summaryFeedback || "No overall feedback was generated for this session."}
+              </div>
+            </div>
 
+            <div className="mt-6 pt-4 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-500">
+              <FaLightbulb className="text-amber-500" />
+              <span>Review each individual question evaluation below to pinpoint targeted improvements.</span>
+            </div>
+          </div>
+        </div>
 
+        {/* Question-by-Question Breakdown */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Question-by-Question Breakdown
+            </h2>
+            <span className="text-xs font-semibold text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
+              5 Questions
+            </span>
+          </div>
 
+          <div className="space-y-6">
+            {questions.map((q, idx) => (
+              <div
+                key={q._id || idx}
+                className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-xs space-y-5"
+              >
+                {/* Header row with Question Index and Badges */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-gray-100">
+                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                    Question {idx + 1} of 5
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs font-semibold px-3 py-1 rounded-full border ${getAccuracyBadge(
+                        q.accuracy
+                      )}`}
+                    >
+                      Accuracy: {q.accuracy || "Not assessed"}
+                    </span>
+                    <span className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full">
+                      {typeof q.score === "number" ? q.score : 0} / 10
+                    </span>
+                  </div>
+                </div>
+
+                {/* Question Prompt */}
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 leading-snug">
+                    {q.question}
+                  </h3>
+                </div>
+
+                {/* Candidate's Submitted Answer */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                    Your Submitted Answer
+                  </p>
+                  <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-xs sm:text-sm text-gray-800 leading-relaxed whitespace-pre-wrap font-sans">
+                    {q.userAnswer && q.userAnswer.trim()
+                      ? q.userAnswer
+                      : "(No answer provided)"}
+                  </div>
+                </div>
+
+                {/* AI Constructive Feedback */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-green-700 mb-2 flex items-center gap-1.5">
+                    <BsRobot size={14} />
+                    <span>AI Feedback & Strengths</span>
+                  </p>
+                  <div className="bg-green-50/60 border border-green-200 rounded-2xl p-4 text-xs sm:text-sm text-gray-800 leading-relaxed whitespace-pre-line">
+                    {q.feedback && q.feedback.trim()
+                      ? q.feedback
+                      : "No feedback recorded for this question."}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer CTA */}
+        <div className="bg-black text-white rounded-3xl p-8 sm:p-10 text-center shadow-md">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Continue Your Interview Preparation
+          </h2>
+          <p className="text-gray-400 text-sm max-w-lg mx-auto mb-6">
+            Practice makes perfect. Simulate another mock interview with different
+            roles, levels, or interview modes.
+          </p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button
+              type="button"
+              onClick={() => navigate("/interview")}
+              className="bg-white text-black px-6 py-3 rounded-full text-sm font-semibold hover:bg-gray-100 transition cursor-pointer"
+            >
+              Start Another Interview
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="border border-gray-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-gray-900 transition cursor-pointer"
+            >
+              Dashboard
+            </button>
+          </div>
         </div>
       </div>
-
     </div>
-  )
+  );
 }
 
-export default Step3Report
+export default Step3Report;
