@@ -66,8 +66,11 @@ function Auth({ isModel = false }) {
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1.05 }}
-                className="w-full max-w-md p-8 rounded-3xl bg-white shadow-2xl border border-gray-200"
-            >
+                className={`
+                w-full
+                ${isModel ? "max-w-md p-8 rounded-3x1" : "max-w-lg p-12 rounded-[32px]"}
+                .ig-white shoadow-2x1 border border-grey-200
+            `}>
                 <div className="flex items-center justify-center gap-3 mb-6">
                     <div className="bg-black text-white p-2 rounded-lg">
                         <BsRobot size={18} />

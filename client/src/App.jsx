@@ -5,6 +5,8 @@ import { Route, Routes } from 'react-router-dom'
 import { setUserData } from './redux/userSlice'
 import Home from './pages/Home.jsx'
 import Auth from './pages/Auth.jsx'
+import InterviewPage from './pages/InterviewPage.jsx'
+import InterviewReport from './pages/InterviewReport.jsx'
 
 export const ServerUrl = 'http://localhost:8000'
 
@@ -29,6 +31,10 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/Auth" element={<Auth />} />
+      <Route path="/Interview" element={<InterviewPage/>}/>
+      <Route path="/History" element={<InterviewHistory/>}/>
+      <Route path="/Pricing" element={<Pricing/>}/>
+      <Route path="/Report" element={<InterviewReport/>}/>
     </Routes>
   )
 }
