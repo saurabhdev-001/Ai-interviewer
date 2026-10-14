@@ -1,42 +1,59 @@
-import axios from 'axios'
-import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { Route, Routes } from 'react-router-dom'
-import { setUserData } from './redux/userSlice'
-import Home from './pages/Home.jsx'
-import Auth from './pages/Auth.jsx'
-import InterviewPage from './pages/InterviewPage.jsx'
-import InterviewReport from './pages/InterviewReport.jsx'
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { Route, Routes } from "react-router-dom";
+import api, { ServerUrl } from "./services/api";
+import {
+  setUserData,
+  setSessionLoading,
+  setSessionError,
+  clearSessionError,
+} from "./redux/userSlice";
+import Home from "./pages/Home.jsx";
+import Auth from "./pages/Auth.jsx";
 
-export const ServerUrl = 'http://localhost:8000'
+export { ServerUrl };
 
 function App() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    let isMounted = true;
+
     const getUser = async () => {
       try {
-        const result = await axios.get(`${ServerUrl}/api/user/current-user`, {
-          withCredentials: true})
-         dispatch(setUserData(result.data))
-      } catch {
-        dispatch(setUserData(null))
+        dispatch(setSessionLoading(true));
+        dispatch(clearSessionError());
+        const result = await api.get("/api/user/current-user");
+        if (isMounted) {
+          dispatch(setUserData(result.data));
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        if (error?.response?.status === 401) {
+          dispatch(setUserData(null));
+        } else {
+          const errorMsg =
+            error?.response?.data?.message ||
+            "Unable to reach the server. Please check your connection.";
+          dispatch(setSessionError(errorMsg));
+        }
       }
-    }
+    };
 
-    getUser()
-  }, [dispatch])
+    getUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch]);
 
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/auth" element={<Auth />} />
       <Route path="/Auth" element={<Auth />} />
-      <Route path="/Interview" element={<InterviewPage/>}/>
-      <Route path="/History" element={<InterviewHistory/>}/>
-      <Route path="/Pricing" element={<Pricing/>}/>
-      <Route path="/Report" element={<InterviewReport/>}/>
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;

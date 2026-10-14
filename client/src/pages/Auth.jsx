@@ -1,23 +1,35 @@
-
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { BsRobot } from "react-icons/bs";
 import { HiSparkles } from "react-icons/hi2";
 import { motion } from "motion/react";
 import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../utils/firebase.js";
-import axios from "axios";
-import { ServerUrl } from "../App";
+import api from "../services/api";
 import { setUserData } from "../redux/userSlice";
 
 function Auth({ isModel = false }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
+    const { userData } = useSelector((state) => state.user);
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const inFlightRef = useRef(false);
+
+    const fromLocation = location.state?.from;
+    const rawFrom = fromLocation?.pathname
+        ? `${fromLocation.pathname}${fromLocation.search || ""}${fromLocation.hash || ""}`
+        : (typeof fromLocation === "string" ? fromLocation : "/");
+    const destination = (rawFrom === "/auth" || rawFrom === "/Auth") ? "/" : rawFrom;
+
+    useEffect(() => {
+        if (userData && !isModel) {
+            navigate(destination, { replace: true });
+        }
+    }, [userData, isModel, navigate, destination]);
 
     const handleGoogleAuth = async () => {
         if (inFlightRef.current) return;
@@ -28,16 +40,12 @@ function Auth({ isModel = false }) {
         try {
             const response = await signInWithPopup(auth, provider);
             const idToken = await response.user.getIdToken();
-            const apiRes = await axios.post(
-                ServerUrl + "/api/auth/google",
-                { idToken },
-                { withCredentials: true }
-            );
+            const apiRes = await api.post("/api/auth/google", { idToken });
             if (apiRes?.data?.user) {
                 dispatch(setUserData(apiRes.data.user));
             }
             if (!isModel) {
-                navigate("/");
+                navigate(destination, { replace: true });
             }
         } catch (error) {
             console.error("Authentication error:", error?.message || "Sign-in failed");
