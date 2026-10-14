@@ -275,6 +275,26 @@ You MUST return valid JSON with exactly this structure:
   }
 };
 
+export const getInterviewHistory = async (req, res) => {
+  try {
+    const interviews = await Interview.find({ userId: req.userId })
+      .select("_id role experience interviewType overallScore status createdAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      interviews,
+    });
+  } catch (error) {
+    console.error("Get interview history error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while retrieving interview history.",
+    });
+  }
+};
+
 /**
  * GET /api/interview/history
  * Returns a paginated list of interviews belonging exclusively to the authenticated user.
